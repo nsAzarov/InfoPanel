@@ -1,10 +1,11 @@
-// const express = require('express')
-// const cors = require('cors')
-// const bodyParser = require('body-parser')
 import fetch from 'node-fetch'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+import {
+	generateIncomingFlight,
+	generateOutcomingFlight,
+} from './utils/index.js'
 
 const app = express()
 
@@ -12,50 +13,17 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.get('/Data', (_, res) => {
-	const data = [
-		{
-			time: '2022-02-13T10:19:19.881Z',
-			flight: 'RU1234',
-			origin: 'Moscow',
-			destination: 'Saint-Petersburg',
-			status: 'Landed',
-			terminal: 'A1',
-		},
-		{
-			time: '2022-02-13T10:19:19.882Z',
-			flight: 'RU1234',
-			origin: 'Moscow',
-			destination: 'Saint-Petersburg',
-			status: 'Landed',
-			terminal: 'A1',
-		},
-		{
-			time: '2022-02-13T10:19:19.883Z',
-			flight: 'RU1234',
-			origin: 'Moscow',
-			destination: 'Saint-Petersburg',
-			status: 'Landed',
-			terminal: 'A1',
-		},
-		{
-			time: '2022-02-13T10:19:19.884Z',
-			flight: 'RU1234',
-			origin: 'Moscow',
-			destination: 'Saint-Petersburg',
-			status: 'Landed',
-			terminal: 'A1',
-		},
-		{
-			time: '2022-02-13T10:19:19.885Z',
-			flight: 'RU1234',
-			origin: 'Moscow',
-			destination: 'Saint-Petersburg',
-			status: 'Landed',
-			terminal: 'A1',
-		},
-	]
+const data = []
 
+setInterval(() => {
+	const newFlight =
+		new Date().getTime() % 2 === 0
+			? generateIncomingFlight()
+			: generateOutcomingFlight()
+	data.push(newFlight)
+}, 1000)
+
+app.get('/Data', (_, res) => {
 	res.json(data)
 })
 

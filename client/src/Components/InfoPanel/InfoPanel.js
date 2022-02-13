@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,40 +6,26 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { ApiService } from '../../Services';
 
-export const InfoPanel = () => {
-  const [data, setData] = useState(undefined);
-
-  useEffect(() => {
-    const api = new ApiService();
-    api.getData().then((data) => setData(data));
-
-    const interval = setInterval(
-      () => api.getData().then((data) => setData(data)),
-      5000
-    );
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  if (!data) return null;
+export const InfoPanel = ({ flights, incoming }) => {
+  if (!flights) return null;
   return (
-    <TableContainer elevation={15} component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    <TableContainer sx={{ maxHeight: 440 }} elevation={15} component={Paper}>
+      <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell align="center">Time</TableCell>
+            <TableCell align="center">
+              {incoming ? 'Arrival' : 'Departure'} Time
+            </TableCell>
             <TableCell align="center">Flight</TableCell>
-            <TableCell align="center">Origin</TableCell>
-            <TableCell align="center">Destination</TableCell>
+            {incoming && <TableCell align="center">Origin</TableCell>}
+            {!incoming && <TableCell align="center">Destination</TableCell>}
             <TableCell align="center">Status</TableCell>
             <TableCell align="center">Terminal</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map((row) => (
+          {flights.map((row) => (
             <TableRow
               key={row.time}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -51,8 +37,10 @@ export const InfoPanel = () => {
                 })}
               </TableCell>
               <TableCell align="center">{row.flight}</TableCell>
-              <TableCell align="center">{row.origin}</TableCell>
-              <TableCell align="center">{row.destination}</TableCell>
+              {incoming && <TableCell align="center">{row.origin}</TableCell>}
+              {!incoming && (
+                <TableCell align="center">{row.destination}</TableCell>
+              )}
               <TableCell align="center">{row.status}</TableCell>
               <TableCell align="center">{row.terminal}</TableCell>
             </TableRow>
