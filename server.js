@@ -15,16 +15,20 @@ app.use(bodyParser.json())
 
 const data = []
 
-setInterval(() => {
+const generateFlight = () => {
 	const newFlight =
 		new Date().getTime() % 2 === 0
 			? generateIncomingFlight()
 			: generateOutcomingFlight()
 	data.push(newFlight)
-}, 1000)
+}
 
 app.get('/Data', (_, res) => {
 	res.json(data)
+})
+
+app.post('/GenerateFlight', () => {
+	generateFlight()
 })
 
 app.get('/CatFacts', async (_, res) => {

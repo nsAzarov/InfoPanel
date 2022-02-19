@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiService } from '../../Services';
 import { InfoPanel } from '../InfoPanel';
@@ -23,6 +23,7 @@ export const Main = () => {
   const [outcomingFlights, setOutcomingFlights] = useState(undefined);
 
   const api = useMemo(() => new ApiService(), []);
+
   const fetchData = useCallback(() => {
     api.getData().then((data) => {
       const filteredFlights = filterFlights(data);
@@ -35,31 +36,54 @@ export const Main = () => {
     });
   }, [api]);
 
+  const generateFlight = useCallback(() => {
+    api.generateFlight();
+    fetchData();
+  }, [api, fetchData]);
+
   useEffect(() => {
     fetchData();
-    const interval = setInterval(() => fetchData(), 5000);
-    return () => {
-      clearInterval(interval);
-    };
   }, [fetchData]);
 
   return (
     <Box sx={{ maxWidth: '70%', margin: '100px auto' }}>
-      <Box sx={{ marginTop: '100px' }}>
-        {!!incomingFlights && (
+      {!incomingFlights && !outcomingFlights ? (
+        <Box sx={{ marginTop: '100px' }}>
           <Typography variant="h4" align="center" paddingBottom={'20px'}>
-            Arrivals
+            No Flights At This Time
           </Typography>
-        )}
-        <InfoPanel flights={incomingFlights} incoming />
-      </Box>
-      <Box sx={{ marginTop: '100px' }}>
-        {!!outcomingFlights && (
-          <Typography variant="h4" align="center" paddingBottom={'20px'}>
-            Departures
-          </Typography>
-        )}
-        <InfoPanel flights={outcomingFlights} />
+        </Box>
+      ) : (
+        <>
+          <Box sx={{ marginTop: '100px' }}>
+            {!!incomingFlights && (
+              <Typography variant="h4" align="center" paddingBottom={'20px'}>
+                Arrivals
+              </Typography>
+            )}
+            <InfoPanel flights={incomingFlights} incoming />
+          </Box>
+          <Box sx={{ marginTop: '100px' }}>
+            {!!outcomingFlights && (
+              <Typography variant="h4" align="center" paddingBottom={'20px'}>
+                Departures
+              </Typography>
+            )}
+            <InfoPanel flights={outcomingFlights} />
+          </Box>
+        </>
+      )}
+      <Box mt="80px" display="flex" justifyContent="space-evenly">
+        <Button
+          mr="16px"
+          variant="outlined"
+          onClick={() => window.location.reload()}
+        >
+          Refresh
+        </Button>
+        <Button variant="outlined" onClick={generateFlight}>
+          Generate Flight
+        </Button>
       </Box>
     </Box>
   );

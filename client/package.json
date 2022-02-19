@@ -32,5 +32,9 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:4000"
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:4000"
+    }
+  }
 }
