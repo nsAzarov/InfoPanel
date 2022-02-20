@@ -90,51 +90,63 @@ const sendUpdateOutcomingFlightDataRequest = async (flight) => {
 	}
 }
 
-const isDateEarlierThanXMinutes = (time, minutes) => {
-	return new Date(new Date(time).getTime() - minutes * 60000) < new Date()
+const isDateEarlierThanXMinutes = (time, minutes, virtualTime) => {
+	return (
+		new Date(new Date(time).getTime() - minutes * 60000) < new Date(virtualTime)
+	)
 }
 
-const updateIncomingFlightData = async (flight) => {
+const updateIncomingFlightData = async (flight, virtualTime) => {
 	if (flight.status === 'Landed') return
 	if (
 		flight.status === 'Landing' &&
-		isDateEarlierThanXMinutes(flight.time, 2)
+		isDateEarlierThanXMinutes(flight.time, 2, virtualTime)
 	) {
 		await sendUpdateIncomingFlightDataRequest(flight)
 	} else if (
 		(flight.status === 'Descending' ||
 			flight.status === 'Waiting for landing') &&
-		isDateEarlierThanXMinutes(flight.time, 10)
+		isDateEarlierThanXMinutes(flight.time, 10, virtualTime)
 	) {
 		await sendUpdateIncomingFlightDataRequest(flight)
 	} else if (
 		flight.status === 'In Flight' &&
-		isDateEarlierThanXMinutes(flight.time, 30)
+		isDateEarlierThanXMinutes(flight.time, 30, virtualTime)
 	) {
 		await sendUpdateIncomingFlightDataRequest(flight)
 	}
 }
 
-const updateOutcomingFlightData = async (flight) => {
+const updateOutcomingFlightData = async (flight, virtualTime) => {
 	if (flight.status === 'In Flight') return
-	if (isDateEarlierThanXMinutes(flight.time, 0)) {
+	if (isDateEarlierThanXMinutes(flight.time, 0, virtualTime)) {
 		await sendUpdateOutcomingFlightDataRequest(flight)
 	}
 }
 
 setInterval(async () => {
+	const { time: virtualTime } = await (
+		await fetch('http://localhost:4003/Time', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ from: MODULE_NAME }),
+		})
+	).json()
+
 	for (let i = 0; i < data.length; i++) {
 		if (data[i].incoming) {
 			if (
-				new Date(new Date(data[i].time).getTime() - 30 * 60000) < new Date()
+				new Date(new Date(data[i].time).getTime() - 30 * 60000) <
+				new Date(virtualTime)
 			) {
-				await updateIncomingFlightData(data[i])
+				await updateIncomingFlightData(data[i], virtualTime)
 			}
 		} else if (data[i].outcoming) {
 			if (
-				new Date(new Date(data[i].time).getTime() - 30 * 60000) < new Date()
+				new Date(new Date(data[i].time).getTime() - 30 * 60000) <
+				new Date(virtualTime)
 			) {
-				await updateOutcomingFlightData(data[i])
+				await updateOutcomingFlightData(data[i], virtualTime)
 			}
 		}
 	}
