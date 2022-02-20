@@ -39,11 +39,48 @@ export const Main = () => {
   const generateFlight = useCallback(() => {
     api.generateFlight();
     fetchData();
-  }, [api, fetchData]);
+  }, [api, fetchData, incomingFlights, outcomingFlights]);
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(() => fetchData(), 5000);
+    return () => {
+      clearInterval(interval);
+    };
   }, [fetchData]);
+
+  const checkDates = useCallback(() => {
+    if (incomingFlights && incomingFlights.length > 0) {
+      for (let i = 0; i < incomingFlights.length; i++) {
+        if (
+          new Date(new Date(incomingFlights[0].time).getTime() - 90 * 60000) <
+          new Date()
+        ) {
+          api.getLandingFlightData(incomingFlights[0]);
+        }
+      }
+    }
+
+    if (outcomingFlights && outcomingFlights.length > 0) {
+      for (let i = 0; i < outcomingFlights.length; i++) {
+        if (
+          new Date(new Date(outcomingFlights[0].time).getTime() - 90 * 60000) <
+          new Date()
+        ) {
+          api.getTakingOffFlightData(outcomingFlights[0]);
+        }
+      }
+    }
+  }, [incomingFlights, outcomingFlights, api]);
+
+  useEffect(() => {
+    checkDates();
+    const interval = setInterval(() => checkDates(), 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [checkDates]);
 
   return (
     <Box sx={{ maxWidth: '70%', margin: '100px auto' }}>

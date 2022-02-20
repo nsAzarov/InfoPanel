@@ -1,16 +1,18 @@
 import { cities, terminals } from '../data/index.js'
 import { generateDate } from './generateDate.js'
 import { getRandomInt } from './getRandomInt.js'
+import { v4 as uuidv4 } from 'uuid'
 
 export const generateOutcomingFlight = () => {
 	return {
+		id: uuidv4(),
 		time: generateDate(),
 		incoming: false,
 		outcoming: true,
 		flight: getRandomInt(9999).toString(),
 		origin: undefined,
 		destination: cities[getRandomInt(cities.length)],
-		status: 'In Flight',
+		status: 'In Airport',
 		terminal: terminals[getRandomInt(terminals.length)],
 	}
 }

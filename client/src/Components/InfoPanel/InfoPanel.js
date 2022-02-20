@@ -14,14 +14,28 @@ export const InfoPanel = ({ flights, incoming }) => {
       <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell align="center">
+            <TableCell align="center" sx={{ fontWeight: 'bold' }}>
               {incoming ? 'Arrival' : 'Departure'} Time
             </TableCell>
-            <TableCell align="center">Flight</TableCell>
-            {incoming && <TableCell align="center">Origin</TableCell>}
-            {!incoming && <TableCell align="center">Destination</TableCell>}
-            <TableCell align="center">Status</TableCell>
-            <TableCell align="center">Terminal</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+              Flight
+            </TableCell>
+            {incoming && (
+              <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                Origin
+              </TableCell>
+            )}
+            {!incoming && (
+              <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                Destination
+              </TableCell>
+            )}
+            <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+              Status
+            </TableCell>
+            <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+              Terminal
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

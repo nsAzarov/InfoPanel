@@ -6,15 +6,36 @@ export class ApiService {
     }
     return await res.json();
   }
-  async sendPostRequest(url) {
-    fetch(`${url}`, {
-      method: 'POST'
+  async sendPostRequest(url, body) {
+    const res = await fetch(`${url}`, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body
     });
+    if (!res.ok) {
+      throw new Error(`Could not fetch ${url}, received ${res.status}`);
+    }
+    return await res.json();
   }
   async getData() {
-    return await this.getResource(`/Data`);
+    return await this.getResource('/Data');
   }
-  generateFlight() {
-    this.sendPostRequest(`/GenerateFlight`);
+  async generateFlight() {
+    await this.sendPostRequest('/GenerateFlight');
+  }
+  async getLandingFlightData(flight) {
+    await this.sendPostRequest(
+      '/LandingFlightData',
+      JSON.stringify({ flight })
+    );
+  }
+  async getTakingOffFlightData(flight) {
+    await this.sendPostRequest(
+      '/TakingOffFlightData',
+      JSON.stringify({ flight })
+    );
   }
 }

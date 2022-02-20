@@ -5,6 +5,9 @@ import bodyParser from 'body-parser'
 import {
 	generateIncomingFlight,
 	generateOutcomingFlight,
+	logReq,
+	logRes,
+	logErr,
 } from './utils/index.js'
 
 const app = express()
@@ -13,7 +16,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-const data = []
+let data = []
 
 const generateFlight = () => {
 	const newFlight =
@@ -23,20 +26,63 @@ const generateFlight = () => {
 	data.push(newFlight)
 }
 
+const updateFlightInDB = (updatedFlight) => {
+	const newData = []
+	data.forEach((flight) => {
+		if (flight.id === updatedFlight.id) {
+			newData.push(updatedFlight)
+		} else {
+			newData.push(flight)
+		}
+	})
+	data = newData
+}
+
 app.get('/Data', (_, res) => {
 	res.json(data)
 })
 
-app.post('/GenerateFlight', () => {
+app.post('/GenerateFlight', async (_, res) => {
 	generateFlight()
+	res.json('ok')
 })
 
-app.get('/CatFacts', async (_, res) => {
-	const externalData = await (
-		await fetch('https://cat-fact.herokuapp.com/facts')
-	).json()
-	console.log('server data', externalData)
-	res.json(externalData)
+app.post('/LandingFlightData', async (req, res) => {
+	logReq('LandingFlightData', req.body.flight)
+	try {
+		const externalData = await (
+			await fetch('http://localhost:4001/LandingFlightData', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(req.body),
+			})
+		).json()
+		logRes('LandingFlightData', externalData)
+		updateFlightInDB(externalData)
+		res.json(externalData)
+	} catch (e) {
+		logErr('something went wrong during "/LandingFlightData"')
+		res.json(req.body.flight)
+	}
+})
+
+app.post('/TakingOffFlightData', async (req, res) => {
+	logReq('TakingOffFlightData', req.body.flight)
+	try {
+		const externalData = await (
+			await fetch('http://localhost:4001/TakingOffFlightData', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(req.body),
+			})
+		).json()
+		logRes('TakingOffFlightData', externalData)
+		updateFlightInDB(externalData)
+		res.json(externalData)
+	} catch (e) {
+		logErr('something went wrong during "/TakingOffFlightData"')
+		res.json(req.body.flight)
+	}
 })
 
 if (process.env.NODE_ENV === 'production') {
