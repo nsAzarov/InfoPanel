@@ -25,7 +25,6 @@ export const Main = () => {
   const api = useMemo(() => new ApiService(), []);
 
   const fetchData = useCallback(() => {
-    console.log('fetch data');
     api.getData().then((data) => {
       const filteredFlights = filterFlights(data);
       if (filteredFlights.incoming.length > 0) {

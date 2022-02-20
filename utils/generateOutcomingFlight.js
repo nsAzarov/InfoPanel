@@ -3,10 +3,10 @@ import { generateDate } from './generateDate.js'
 import { getRandomInt } from './getRandomInt.js'
 import { v4 as uuidv4 } from 'uuid'
 
-export const generateOutcomingFlight = () => {
+export const generateOutcomingFlight = (time) => {
 	return {
 		id: uuidv4(),
-		time: generateDate(),
+		time: generateDate(time),
 		incoming: false,
 		outcoming: true,
 		flight: getRandomInt(9999).toString(),

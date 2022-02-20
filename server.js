@@ -10,6 +10,8 @@ import {
 	logErr,
 } from './utils/index.js'
 
+const MODULE_NAME = 'INFO_PANEL'
+
 const app = express()
 
 app.use(cors())
@@ -18,11 +20,12 @@ app.use(bodyParser.json())
 
 let data = []
 
-const generateFlight = () => {
+const generateFlight = (time) => {
+	console.log('time', time)
 	const newFlight =
 		new Date().getTime() % 2 === 0
-			? generateIncomingFlight()
-			: generateOutcomingFlight()
+			? generateIncomingFlight(time)
+			: generateOutcomingFlight(time)
 	data.push(newFlight)
 }
 
@@ -43,7 +46,14 @@ app.get('/Data', (_, res) => {
 })
 
 app.post('/GenerateFlight', async (_, res) => {
-	generateFlight()
+	const { time } = await (
+		await fetch('http://localhost:4003/Time', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ from: MODULE_NAME }),
+		})
+	).json()
+	generateFlight(time)
 	res.json('ok')
 })
 
