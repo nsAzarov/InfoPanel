@@ -47,43 +47,88 @@ app.post('/GenerateFlight', async (_, res) => {
 	res.json('ok')
 })
 
-app.post('/LandingFlightData', async (req, res) => {
-	logReq('LandingFlightData', req.body.flight)
+const sendUpdateIncomingFlightDataRequest = async (flight) => {
 	try {
+		logReq('LandingFlightData')
 		const externalData = await (
 			await fetch('http://localhost:4001/LandingFlightData', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(req.body),
+				body: JSON.stringify(flight),
 			})
 		).json()
 		logRes('LandingFlightData', externalData)
 		updateFlightInDB(externalData)
-		res.json(externalData)
 	} catch (e) {
 		logErr('something went wrong during "/LandingFlightData"')
-		res.json(req.body.flight)
 	}
-})
-
-app.post('/TakingOffFlightData', async (req, res) => {
-	logReq('TakingOffFlightData', req.body.flight)
+}
+const sendUpdateOutcomingFlightDataRequest = async (flight) => {
 	try {
+		logReq('TakingOffFlightData')
 		const externalData = await (
 			await fetch('http://localhost:4001/TakingOffFlightData', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(req.body),
+				body: JSON.stringify(flight),
 			})
 		).json()
 		logRes('TakingOffFlightData', externalData)
 		updateFlightInDB(externalData)
-		res.json(externalData)
 	} catch (e) {
 		logErr('something went wrong during "/TakingOffFlightData"')
-		res.json(req.body.flight)
 	}
-})
+}
+
+const isDateEarlierThanXMinutes = (time, minutes) => {
+	return new Date(new Date(time).getTime() - minutes * 60000) < new Date()
+}
+
+const updateIncomingFlightData = async (flight) => {
+	if (flight.status === 'Landed') return
+	if (
+		flight.status === 'Landing' &&
+		isDateEarlierThanXMinutes(flight.time, 2)
+	) {
+		await sendUpdateIncomingFlightDataRequest(flight)
+	} else if (
+		(flight.status === 'Descending' ||
+			flight.status === 'Waiting for landing') &&
+		isDateEarlierThanXMinutes(flight.time, 10)
+	) {
+		await sendUpdateIncomingFlightDataRequest(flight)
+	} else if (
+		flight.status === 'In Flight' &&
+		isDateEarlierThanXMinutes(flight.time, 30)
+	) {
+		await sendUpdateIncomingFlightDataRequest(flight)
+	}
+}
+
+const updateOutcomingFlightData = async (flight) => {
+	if (flight.status === 'In Flight') return
+	if (isDateEarlierThanXMinutes(flight.time, 0)) {
+		await sendUpdateOutcomingFlightDataRequest(flight)
+	}
+}
+
+setInterval(async () => {
+	for (let i = 0; i < data.length; i++) {
+		if (data[i].incoming) {
+			if (
+				new Date(new Date(data[i].time).getTime() - 30 * 60000) < new Date()
+			) {
+				await updateIncomingFlightData(data[i])
+			}
+		} else if (data[i].outcoming) {
+			if (
+				new Date(new Date(data[i].time).getTime() - 30 * 60000) < new Date()
+			) {
+				await updateOutcomingFlightData(data[i])
+			}
+		}
+	}
+}, 2000)
 
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static('client/build'))
