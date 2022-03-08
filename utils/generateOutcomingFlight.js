@@ -10,6 +10,7 @@ export const generateOutcomingFlight = (time) => {
 		incoming: false,
 		outcoming: true,
 		flight: getRandomInt(9999).toString(),
+		capacity: 100,
 		origin: undefined,
 		destination: cities[getRandomInt(cities.length)],
 		status: 'In Airport',

@@ -21,7 +21,6 @@ app.use(bodyParser.json())
 let data = []
 
 const generateFlight = (time) => {
-	console.log('time', time)
 	const newFlight =
 		new Date().getTime() % 2 === 0
 			? generateIncomingFlight(time)
@@ -43,6 +42,10 @@ const updateFlightInDB = (updatedFlight) => {
 
 app.get('/Data', (_, res) => {
 	res.json(data)
+})
+
+app.get('/OutcomingFlights', (_, res) => {
+	res.json(data.filter((x) => x.outcoming))
 })
 
 app.post('/GenerateFlight', async (_, res) => {
